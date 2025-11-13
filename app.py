@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import streamlit as st
 import PyPDF2
 import io
@@ -10,16 +13,35 @@ import base64
 from requests.exceptions import Timeout, RequestException
 from datetime import datetime
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
+if load_dotenv:
+    env_path = Path(__file__).resolve().parent / ".env"
+    if env_path.exists():
+        load_dotenv(dotenv_path=env_path, override=False)
+
 # Azure OpenAI Configuration
 # For local development, you can set these in .streamlit/secrets.toml
 # For Streamlit Cloud, set these in the app settings
-try:
-    AZURE_ENDPOINT = st.secrets["AZURE_ENDPOINT"]
-    API_KEY = st.secrets["API_KEY"]
-except:
-    # Fallback for local development without secrets file
+AZURE_ENDPOINT = os.getenv("AZURE_ENDPOINT")
+API_KEY = os.getenv("API_KEY")
+
+if not AZURE_ENDPOINT or not API_KEY:
+    try:
+        secrets = st.secrets
+        AZURE_ENDPOINT = AZURE_ENDPOINT or secrets["AZURE_ENDPOINT"]
+        API_KEY = API_KEY or secrets["API_KEY"]
+    except Exception:
+        pass
+
+# Fallback defaults if nothing else is configured
+if not AZURE_ENDPOINT:
     AZURE_ENDPOINT = "https://bfhl-hrx.openai.azure.com/"
-    API_KEY = ""  # API key removed for security - configure in secrets
+if not API_KEY:
+    API_KEY = ""  # Configure via .env, environment variables, or Streamlit secrets
 
 # Chatbot flow states
 CHAT_STATES = {
