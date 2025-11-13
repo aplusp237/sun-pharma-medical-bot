@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
 
+os.environ.setdefault("PORT", "8000")
+os.environ.setdefault("STREAMLIT_SERVER_ADDRESS", "0.0.0.0")
+os.environ.setdefault("STREAMLIT_SERVER_PORT", os.environ.get("PORT", "8000"))
+
 import streamlit as st
 import PyPDF2
 import io
